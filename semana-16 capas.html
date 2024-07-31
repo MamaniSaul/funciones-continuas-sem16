@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Nueva York con Capas</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        #map {
+            width: 100%;
+            height: 600px;
+        }
+        .button-container {
+            margin: 10px;
+        }
+        .layer-button {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body onload="initMap()">
+    <h1>Mapa de Nueva York con Capas</h1>
+    <div class="button-container">
+        <button class="layer-button" onclick="toggleLayer('subway')">Toggle Estaciones de Metro</button>
+        <button class="layer-button" onclick="toggleLayer('parks')">Toggle Parques</button>
+    </div>
+    <div id="map"></div>
+
+    <script>
+        var map, subwayLayer, parksLayer;
+
+        function initMap() {
+            map = L.map('map').setView([40.7128, -74.0060], 12);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // Add subway layer with blue color
+            fetch('https://data.cityofnewyork.us/resource/kk4q-3rt2.geojson')
+                .then(response => response.json())
+                .then(data => {
+                    subwayLayer = L.geoJson(data, {
+                        pointToLayer: function (feature, latlng) {
+                            return L.circleMarker(latlng, {
+                                radius: 5,
+                                fillColor: 'blue',
+                                color: 'blue',
+                                weight: 1,
+                                opacity: 1,
+                                fillOpacity: 0.8
+                            });
+                        }
+                    });
+                    subwayLayer.addTo(map);
+                });
+
+            // Add parks layer with green color
+            fetch('https://data.cityofnewyork.us/resource/p7jc-c8ak.geojson')
+                .then(response => response.json())
+                .then(data => {
+                    parksLayer = L.geoJson(data, {
+                        style: function () {
+                            return { color: 'green' };
+                        },
+                        pointToLayer: function (feature, latlng) {
+                            return L.circleMarker(latlng, {
+                                radius: 5,
+                                fillColor: 'green',
+                                color: 'green',
+                                weight: 1,
+                                opacity: 1,
+                                fillOpacity: 0.8
+                            });
+                        }
+                    });
+                    parksLayer.addTo(map);
+                });
+        }
+
+        function toggleLayer(layer) {
+            if (layer === 'subway') {
+                if (map.hasLayer(subwayLayer)) {
+                    map.removeLayer(subwayLayer);
+                } else {
+                    map.addLayer(subwayLayer);
+                }
+            } else if (layer === 'parks') {
+                if (map.hasLayer(parksLayer)) {
+                    map.removeLayer(parksLayer);
+                } else {
+                    map.addLayer(parksLayer);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
